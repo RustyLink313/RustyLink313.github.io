@@ -2,83 +2,2573 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <!-- 让网页在手机上自适应 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>我的个人介绍</title>
-  <!-- 引入CSS样式文件 -->
-  <link rel="stylesheet" href="style.css">
+  <title>JoltTalk</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义主题 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3B82F6',
+            secondary: '#10B981',
+            accent: '#8B5CF6',
+            neutral: '#F3F4F6',
+            dark: '#1F2937'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .card-shadow {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+      .hover-lift {
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+      .hover-lift:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      }
+      .text-balance {
+        text-wrap: balance;
+      }
+      .nav-active {
+        color: #3B82F6;
+        font-weight: 600;
+        border-bottom: 2px solid #3B82F6;
+      }
+      .game-cell {
+        transition: all 0.2s ease;
+      }
+      .game-cell:hover {
+        transform: scale(1.05);
+      }
+      .carousel-item {
+        display: none;
+        animation: fadeIn 0.5s ease-in-out;
+      }
+      .carousel-item.active {
+        display: block;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+    }
+  </style>
 </head>
-<body>
-  <!-- 头部：标题和导航 -->
-  <header class="header">
-    <h1>你好，我是马浩然</h1>
-    <p>一名正在学习前端的新手</p>
-    <nav class="nav">
-      <a href="#about">关于我</a>
-      <a href="#skills">我的技能</a>
-      <a href="#contact">联系我</a>
-    </nav>
+<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
+  <!-- 导航栏 -->
+  <header id="navbar" class="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <i class="fa fa-bolt text-primary text-2xl"></i>
+        <h1 class="text-xl font-bold text-primary">JoltTalk</h1>
+      </div>
+      
+      <nav class="hidden md:flex items-center space-x-8">
+        <a href="#" class="font-medium text-gray-700 hover:text-primary transition-colors py-5 border-b-2 border-transparent" id="nav-home">首页</a>
+        <a href="#" class="font-medium text-gray-700 hover:text-primary transition-colors py-5 border-b-2 border-transparent" id="nav-forum">论坛</a>
+        <a href="#" class="font-medium text-gray-700 hover:text-primary transition-colors py-5 border-b-2 border-transparent" id="nav-games">游戏</a>
+      </nav>
+      
+      <!-- 搜索框 -->
+      <div class="hidden md:block relative w-1/4 max-w-md">
+        <input type="text" id="search-input" placeholder="搜索帖子或用户..." 
+               class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+        <i class="fa fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+      </div>
+      
+      <div class="flex items-center space-x-4" id="auth-buttons">
+        <button id="login-btn" class="px-4 py-2 rounded-md border border-primary text-primary hover:bg-primary/5 transition-colors">登录</button>
+        <button id="register-btn" class="px-4 py-2 rounded-md bg-primary text-white hover:bg-primary/90 transition-colors">注册</button>
+      </div>
+      
+      <div class="hidden items-center space-x-4" id="user-menu-container">
+        <button id="new-post-btn" class="px-4 py-2 rounded-md bg-primary text-white hover:bg-primary/90 transition-colors">
+          <i class="fa fa-pencil mr-1"></i> 发布
+        </button>
+        <div class="relative" id="user-dropdown">
+          <button id="user-menu-trigger" class="flex items-center space-x-2 focus:outline-none">
+            <img id="user-avatar" src="https://picsum.photos/seed/user/40/40" alt="用户头像" class="w-8 h-8 rounded-full object-cover border-2 border-primary/20">
+            <span id="username-display" class="font-medium hidden md:inline-block"></span>
+            <i class="fa fa-angle-down text-gray-500 transition-transform duration-200" id="dropdown-icon"></i>
+          </button>
+          <div id="user-dropdown-menu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden z-20">
+            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" id="profile-link">个人资料</a>
+            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" id="my-posts-link">我的帖子</a>
+            <div class="border-t border-gray-100 my-1"></div>
+            <a href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100" id="logout-btn">退出登录</a>
+          </div>
+        </div>
+      </div>
+      
+      <button class="md:hidden text-gray-500" id="mobile-menu-btn">
+        <i class="fa fa-bars text-xl"></i>
+      </button>
+    </div>
+    
+    <!-- 移动端菜单 -->
+    <div class="md:hidden hidden bg-white border-t" id="mobile-menu">
+      <div class="container mx-auto px-4 py-3">
+        <!-- 移动端搜索框 -->
+        <div class="relative mb-4">
+          <input type="text" id="mobile-search-input" placeholder="搜索..." 
+                 class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+          <i class="fa fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        </div>
+        <div class="flex flex-col space-y-3">
+          <a href="#" class="py-2 font-medium text-gray-700 hover:text-primary transition-colors" id="mobile-nav-home">首页</a>
+          <a href="#" class="py-2 font-medium text-gray-700 hover:text-primary transition-colors" id="mobile-nav-forum">论坛</a>
+          <a href="#" class="py-2 font-medium text-gray-700 hover:text-primary transition-colors" id="mobile-nav-games">游戏</a>
+          <div class="flex space-x-3 py-2">
+            <button id="mobile-login-btn" class="flex-1 px-4 py-2 rounded-md border border-primary text-primary">登录</button>
+            <button id="mobile-register-btn" class="flex-1 px-4 py-2 rounded-md bg-primary text-white">注册</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </header>
 
-  <!-- 主要内容区 -->
-  <main class="main">
-    <!-- 关于我部分 -->
-    <section id="about" class="section">
-      <h2>关于我</h2>
-      <div class="about-content">
-        <img src="https://picsum.photos/200/200" alt="我的头像" class="avatar">
-        <p>大家好！我叫马浩然，今年20岁，目前在学习HTML、CSS和JavaScript。我喜欢编程，因为它能把想法变成现实。平时喜欢看技术文档、写代码，偶尔也会打打游戏放松一下。</p>
+  <!-- 主内容区 -->
+  <main class="flex-grow">
+    <!-- 未登录状态：欢迎区域 -->
+    <section id="welcome-section" class="py-12">
+      <!-- 首页轮播 -->
+      <div class="relative max-w-5xl mx-auto mb-12 rounded-xl overflow-hidden shadow-lg">
+        <div id="carousel" class="relative h-64 md:h-80">
+          <div class="carousel-item active h-full bg-gradient-to-r from-primary to-accent flex items-center">
+            <div class="container mx-auto px-6 text-white">
+              <h2 class="text-3xl md:text-4xl font-bold mb-4">加入 JoltTalk 社区</h2>
+              <p class="text-lg md:text-xl mb-6 max-w-lg">分享你的想法，参与讨论，结识志同道合的朋友</p>
+              <button class="welcome-register-btn px-6 py-3 rounded-md bg-white text-primary hover:bg-gray-100 transition-all text-lg font-medium">
+                立即注册
+              </button>
+            </div>
+          </div>
+          <div class="carousel-item h-full bg-gradient-to-r from-secondary to-primary flex items-center">
+            <div class="container mx-auto px-6 text-white">
+              <h2 class="text-3xl md:text-4xl font-bold mb-4">探索精彩内容</h2>
+              <p class="text-lg md:text-xl mb-6 max-w-lg">发现热门话题，参与精彩讨论，拓展你的视野</p>
+              <button class="welcome-login-btn px-6 py-3 rounded-md bg-white text-primary hover:bg-gray-100 transition-all text-lg font-medium">
+                登录探索
+              </button>
+            </div>
+          </div>
+          <div class="carousel-item h-full bg-gradient-to-r from-accent to-secondary flex items-center">
+            <div class="container mx-auto px-6 text-white">
+              <h2 class="text-3xl md:text-4xl font-bold mb-4">休闲小游戏</h2>
+              <p class="text-lg md:text-xl mb-6 max-w-lg">玩会儿小游戏放松一下，结交更多朋友</p>
+              <button class="welcome-login-btn px-6 py-3 rounded-md bg-white text-primary hover:bg-gray-100 transition-all text-lg font-medium">
+                开始游戏
+              </button>
+            </div>
+          </div>
+          <!-- 轮播控制 -->
+          <button class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm transition-all" id="carousel-prev">
+            <i class="fa fa-angle-left text-xl"></i>
+          </button>
+          <button class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm transition-all" id="carousel-next">
+            <i class="fa fa-angle-right text-xl"></i>
+          </button>
+          <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+            <button class="carousel-dot w-3 h-3 rounded-full bg-white/50 active" data-index="0"></button>
+            <button class="carousel-dot w-3 h-3 rounded-full bg-white/50" data-index="1"></button>
+            <button class="carousel-dot w-3 h-3 rounded-full bg-white/50" data-index="2"></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="container mx-auto px-4">
+        <div class="max-w-2xl mx-auto text-center mb-16">
+          <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4 text-balance">欢迎来到 JoltTalk</h2>
+          <p class="text-gray-600 text-lg mb-8 text-balance">这里是一个集交流、分享和娱乐于一体的社区平台，加入我们，开启精彩体验</p>
+          <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <button id="welcome-login-btn" class="px-6 py-3 rounded-md border border-primary text-primary hover:bg-primary/5 transition-all text-lg font-medium">
+              登录账号
+            </button>
+            <button id="welcome-register-btn" class="px-6 py-3 rounded-md bg-primary text-white hover:bg-primary/90 transition-all text-lg font-medium">
+              注册新账号
+            </button>
+          </div>
+        </div>
+        
+        <!-- 功能特点 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          <div class="bg-white p-6 rounded-xl text-center card-shadow hover-lift">
+            <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fa fa-comments text-primary text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">社区讨论</h3>
+            <p class="text-gray-600">加入各种话题讨论，分享你的观点和经验，结识志同道合的朋友</p>
+          </div>
+          <div class="bg-white p-6 rounded-xl text-center card-shadow hover-lift">
+            <div class="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fa fa-gamepad text-secondary text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">休闲游戏</h3>
+            <p class="text-gray-600">多款轻松有趣的小游戏，让你在交流之余放松心情，缓解压力</p>
+          </div>
+          <div class="bg-white p-6 rounded-xl text-center card-shadow hover-lift">
+            <div class="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fa fa-users text-accent text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">兴趣社群</h3>
+            <p class="text-gray-600">根据兴趣分类的社群，让你快速找到自己感兴趣的内容和人群</p>
+          </div>
+        </div>
+        
+        <!-- 展示一些热门帖子预览 -->
+        <div class="mb-16">
+          <h3 class="text-2xl font-bold mb-6 text-center">热门讨论</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="bg-white p-5 rounded-lg card-shadow hover-lift text-left">
+              <div class="flex items-center mb-3">
+                <img src="https://picsum.photos/seed/user1/40/40" alt="用户头像" class="w-8 h-8 rounded-full mr-2">
+                <span class="text-sm font-medium">科技爱好者</span>
+              </div>
+              <p class="text-gray-800 mb-3 line-clamp-2">你最喜欢的编程语言是什么？为什么？</p>
+              <div class="flex items-center mt-3 text-sm text-gray-500">
+                <span><i class="fa fa-comment-o mr-1"></i> 24 评论</span>
+                <span class="ml-4"><i class="fa fa-heart-o mr-1"></i> 56 点赞</span>
+              </div>
+            </div>
+            <div class="bg-white p-5 rounded-lg card-shadow hover-lift text-left">
+              <div class="flex items-center mb-3">
+                <img src="https://picsum.photos/seed/user2/40/40" alt="用户头像" class="w-8 h-8 rounded-full mr-2">
+                <span class="text-sm font-medium">生活家</span>
+              </div>
+              <p class="text-gray-800 mb-3 line-clamp-2">大家平时是如何保持工作与生活平衡的？</p>
+              <div class="flex items-center mt-3 text-sm text-gray-500">
+                <span><i class="fa fa-comment-o mr-1"></i> 42 评论</span>
+                <span class="ml-4"><i class="fa fa-heart-o mr-1"></i> 89 点赞</span>
+              </div>
+            </div>
+            <div class="bg-white p-5 rounded-lg card-shadow hover-lift text-left">
+              <div class="flex items-center mb-3">
+                <img src="https://picsum.photos/seed/user3/40/40" alt="用户头像" class="w-8 h-8 rounded-full mr-2">
+                <span class="text-sm font-medium">游戏迷</span>
+              </div>
+              <p class="text-gray-800 mb-3 line-clamp-2">有什么适合碎片时间玩的小游戏推荐？</p>
+              <div class="flex items-center mt-3 text-sm text-gray-500">
+                <span><i class="fa fa-comment-o mr-1"></i> 37 评论</span>
+                <span class="ml-4"><i class="fa fa-heart-o mr-1"></i> 63 点赞</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 小游戏预览 -->
+        <div>
+          <h3 class="text-2xl font-bold mb-6 text-center">休闲小游戏</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white rounded-xl overflow-hidden card-shadow hover-lift">
+              <div class="h-48 bg-gradient-to-r from-blue-400 to-indigo-500 relative">
+                <img src="https://picsum.photos/seed/memory/400/200" alt="记忆卡片游戏" class="w-full h-full object-cover mix-blend-overlay opacity-70">
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <h4 class="text-white text-2xl font-bold">记忆卡片</h4>
+                </div>
+              </div>
+              <div class="p-5">
+                <p class="text-gray-600 mb-4">考验你的记忆力，找出所有匹配的卡片对</p>
+                <button class="welcome-login-btn w-full py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+                  开始游戏
+                </button>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl overflow-hidden card-shadow hover-lift">
+              <div class="h-48 bg-gradient-to-r from-green-400 to-teal-500 relative">
+                <img src="https://picsum.photos/seed/number/400/200" alt="猜数字游戏" class="w-full h-full object-cover mix-blend-overlay opacity-70">
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <h4 class="text-white text-2xl font-bold">猜数字</h4>
+                </div>
+              </div>
+              <div class="p-5">
+                <p class="text-gray-600 mb-4">猜一个随机数字，看看你需要多少次才能猜对</p>
+                <button class="welcome-login-btn w-full py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+                  开始游戏
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- 技能部分 -->
-    <section id="skills" class="section">
-      <h2>我的技能</h2>
-      <div class="skills-list">
-        <div class="skill-item">
-          <span>HTML</span>
-          <div class="progress-bar">
-            <div class="progress" style="width: 80%;"></div>
+    <!-- 已登录状态：内容区域 -->
+    <section id="content-section" class="hidden">
+      <!-- 页面内容容器 -->
+      <div id="page-container">
+        <!-- 首页内容 - 重新设计的独立首页 -->
+        <div id="home-page">
+          <div class="bg-gradient-to-r from-primary to-accent text-white py-12 md:py-20">
+            <div class="container mx-auto px-4">
+              <h2 class="text-3xl md:text-4xl font-bold mb-4">欢迎回来，<span id="welcome-username"></span>！</h2>
+              <p class="text-lg md:text-xl max-w-2xl opacity-90">今天想聊点什么？或者玩会儿小游戏放松一下？</p>
+            </div>
+          </div>
+          
+          <div class="container mx-auto px-4 py-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <!-- 左侧：个人动态和快捷操作 -->
+              <div class="lg:col-span-1 space-y-6">
+                <!-- 个人信息卡片 -->
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                  <div class="flex flex-col items-center">
+                    <img id="home-avatar" src="https://picsum.photos/seed/user/100/100" alt="Profile avatar" class="w-24 h-24 rounded-full object-cover mb-4 border-4 border-white shadow-md">
+                    <h3 id="home-username" class="text-xl font-bold mb-1"></h3>
+                    <p id="home-joined" class="text-gray-500 mb-4 text-sm"></p>
+                    <div class="grid grid-cols-3 w-full text-center gap-2 mb-4">
+                      <div>
+                        <p class="font-bold text-primary" id="home-posts-count">0</p>
+                        <p class="text-xs text-gray-500">帖子</p>
+                      </div>
+                      <div>
+                        <p class="font-bold text-primary" id="home-comments-count">0</p>
+                        <p class="text-xs text-gray-500">评论</p>
+                      </div>
+                      <div>
+                        <p class="font-bold text-primary" id="home-likes-count">0</p>
+                        <p class="text-xs text-gray-500">获赞</p>
+                      </div>
+                    </div>
+                    <button id="home-new-post-btn" class="w-full py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+                      <i class="fa fa-pencil mr-1"></i> 发布新帖子
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- 快捷链接 -->
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                  <h3 class="text-lg font-bold mb-4">快速导航</h3>
+                  <ul class="space-y-3">
+                    <li>
+                      <a href="#" class="flex items-center text-gray-700 hover:text-primary transition-colors" id="quick-forum">
+                        <i class="fa fa-comments w-6 text-gray-500"></i>
+                        <span>论坛版块</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#" class="flex items-center text-gray-700 hover:text-primary transition-colors" id="quick-myposts">
+                        <i class="fa fa-file-text-o w-6 text-gray-500"></i>
+                        <span>我的帖子</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#" class="flex items-center text-gray-700 hover:text-primary transition-colors" id="quick-profile">
+                        <i class="fa fa-user w-6 text-gray-500"></i>
+                        <span>个人资料</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#" class="flex items-center text-gray-700 hover:text-primary transition-colors" id="quick-games">
+                        <i class="fa fa-gamepad w-6 text-gray-500"></i>
+                        <span>小游戏</span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              
+              <!-- 右侧：推荐内容和活动 -->
+              <div class="lg:col-span-2 space-y-6">
+                <!-- 推荐帖子 -->
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                  <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">为你推荐</h3>
+                    <a href="#" class="text-primary hover:underline text-sm" id="view-all-posts">查看全部</a>
+                  </div>
+                  <div id="recommended-posts" class="space-y-4">
+                    <!-- 推荐帖子将动态加载 -->
+                  </div>
+                </div>
+                
+                <!-- 小游戏入口 -->
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                  <h3 class="text-xl font-bold mb-6">休闲小游戏</h3>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="border border-gray-200 rounded-lg overflow-hidden hover-lift cursor-pointer game-card" data-game="memory">
+                      <div class="h-36 bg-gradient-to-r from-blue-400 to-indigo-500 relative">
+                        <img src="https://picsum.photos/seed/memory/400/200" alt="记忆卡片游戏" class="w-full h-full object-cover mix-blend-overlay opacity-70">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                          <h4 class="text-white text-xl font-bold">记忆卡片</h4>
+                        </div>
+                      </div>
+                      <div class="p-3 text-center">
+                        <p class="text-sm text-gray-600">考验你的记忆力</p>
+                      </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg overflow-hidden hover-lift cursor-pointer game-card" data-game="number">
+                      <div class="h-36 bg-gradient-to-r from-green-400 to-teal-500 relative">
+                        <img src="https://picsum.photos/seed/number/400/200" alt="猜数字游戏" class="w-full h-full object-cover mix-blend-overlay opacity-70">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                          <h4 class="text-white text-xl font-bold">猜数字</h4>
+                        </div>
+                      </div>
+                      <div class="p-3 text-center">
+                        <p class="text-sm text-gray-600">挑战你的推理能力</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 热门分类 -->
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                  <h3 class="text-xl font-bold mb-6">热门分类</h3>
+                  <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <a href="#" class="category-link p-4 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors flex items-center" data-category="tech">
+                      <span class="w-3 h-3 rounded-full bg-blue-500 mr-2"></span>
+                      <span>科技</span>
+                      <span class="ml-auto text-gray-500 text-sm" id="tech-count">0</span>
+                    </a>
+                    <a href="#" class="category-link p-4 rounded-lg bg-green-50 hover:bg-green-100 transition-colors flex items-center" data-category="life">
+                      <span class="w-3 h-3 rounded-full bg-green-500 mr-2"></span>
+                      <span>生活</span>
+                      <span class="ml-auto text-gray-500 text-sm" id="life-count">0</span>
+                    </a>
+                    <a href="#" class="category-link p-4 rounded-lg bg-yellow-50 hover:bg-yellow-100 transition-colors flex items-center" data-category="work">
+                      <span class="w-3 h-3 rounded-full bg-yellow-500 mr-2"></span>
+                      <span>工作</span>
+                      <span class="ml-auto text-gray-500 text-sm" id="work-count">0</span>
+                    </a>
+                    <a href="#" class="category-link p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors flex items-center" data-category="study">
+                      <span class="w-3 h-3 rounded-full bg-purple-500 mr-2"></span>
+                      <span>学习</span>
+                      <span class="ml-auto text-gray-500 text-sm" id="study-count">0</span>
+                    </a>
+                    <a href="#" class="category-link p-4 rounded-lg bg-red-50 hover:bg-red-100 transition-colors flex items-center" data-category="entertainment">
+                      <span class="w-3 h-3 rounded-full bg-red-500 mr-2"></span>
+                      <span>娱乐</span>
+                      <span class="ml-auto text-gray-500 text-sm" id="entertainment-count">0</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="skill-item">
-          <span>CSS</span>
-          <div class="progress-bar">
-            <div class="progress" style="width: 60%;"></div>
+
+        <!-- 论坛页面 -->
+        <div id="forum-page" class="hidden">
+          <div class="container mx-auto px-4 py-8">
+            <!-- 帖子分类筛选 -->
+            <div class="mb-6 overflow-x-auto pb-2">
+              <div class="flex space-x-2 min-w-max">
+                <button class="category-btn px-4 py-2 rounded-full bg-primary text-white text-sm font-medium" data-category="all">全部</button>
+                <button class="category-btn px-4 py-2 rounded-full bg-white text-gray-700 text-sm font-medium hover:bg-gray-100 transition-colors" data-category="tech">科技</button>
+                <button class="category-btn px-4 py-2 rounded-full bg-white text-gray-700 text-sm font-medium hover:bg-gray-100 transition-colors" data-category="life">生活</button>
+                <button class="category-btn px-4 py-2 rounded-full bg-white text-gray-700 text-sm font-medium hover:bg-gray-100 transition-colors" data-category="work">工作</button>
+                <button class="category-btn px-4 py-2 rounded-full bg-white text-gray-700 text-sm font-medium hover:bg-gray-100 transition-colors" data-category="study">学习</button>
+                <button class="category-btn px-4 py-2 rounded-full bg-white text-gray-700 text-sm font-medium hover:bg-gray-100 transition-colors" data-category="entertainment">娱乐</button>
+              </div>
+            </div>
+
+            <!-- 发帖表单 -->
+            <div class="bg-white rounded-xl p-6 mb-8 card-shadow hover-lift">
+              <div class="flex items-start space-x-4">
+                <img id="post-form-avatar" src="https://picsum.photos/seed/user/40/40" alt="Your avatar" class="w-10 h-10 rounded-full object-cover">
+                <div class="flex-grow">
+                  <h3 class="text-xl font-bold mb-4">分享你的想法</h3>
+                  <form id="post-form" class="space-y-4">
+                    <!-- 帖子分类选择 -->
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">选择分类</label>
+                      <select id="post-category" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+                        <option value="tech">科技</option>
+                        <option value="life">生活</option>
+                        <option value="work">工作</option>
+                        <option value="study">学习</option>
+                        <option value="entertainment">娱乐</option>
+                      </select>
+                    </div>
+                    <div>
+                      <textarea 
+                        id="post-content" 
+                        class="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all resize-none" 
+                        rows="4" 
+                        placeholder="有什么想和大家分享的吗？"></textarea>
+                    </div>
+                    <div class="flex justify-end">
+                      <button type="submit" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center">
+                        <i class="fa fa-paper-plane mr-2"></i> 发布帖子
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <!-- 帖子列表 -->
+            <div class="mb-6">
+              <h3 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fa fa-fire text-accent mr-2"></i> 最新讨论
+              </h3>
+              <div id="posts-container" class="space-y-6">
+                <!-- 帖子将通过JavaScript动态加载 -->
+                <div class="text-center py-12 text-gray-500" id="empty-posts">
+                  <i class="fa fa-file-text-o text-4xl mb-3 opacity-50"></i>
+                  <p>还没有帖子，快来发布第一条吧！</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="skill-item">
-          <span>JavaScript</span>
-          <div class="progress-bar">
-            <div class="progress" style="width: 40%;"></div>
+
+        <!-- 游戏页面 -->
+        <div id="games-page" class="hidden">
+          <div class="container mx-auto px-4 py-8">
+            <h2 class="text-2xl font-bold mb-8 text-center">休闲小游戏</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <!-- 游戏选择菜单 -->
+              <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                  <h3 class="text-xl font-bold mb-4">游戏列表</h3>
+                  <ul class="space-y-2">
+                    <li>
+                      <button class="game-select-btn w-full text-left p-3 rounded-lg bg-primary text-white flex items-center" data-game="memory">
+                        <i class="fa fa-th-large w-6 mr-2"></i>
+                        <span>记忆卡片</span>
+                      </button>
+                    </li>
+                    <li>
+                      <button class="game-select-btn w-full text-left p-3 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors flex items-center" data-game="number">
+                        <i class="fa fa-hashtag w-6 mr-2"></i>
+                        <span>猜数字</span>
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                  <h3 class="text-xl font-bold mb-4">游戏说明</h3>
+                  <div id="game-instructions">
+                    <h4 class="font-bold mb-2">记忆卡片</h4>
+                    <p class="text-gray-600 text-sm">
+                      翻牌配对游戏，找出所有相同的卡片对。<br>
+                      尽量用最少的步数完成，挑战你的记忆力！
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 游戏区域 -->
+              <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl p-6 card-shadow min-h-[400px]">
+                  <!-- 记忆卡片游戏 -->
+                  <div id="memory-game" class="game-container">
+                    <div class="flex justify-between items-center mb-6">
+                      <h3 class="text-xl font-bold">记忆卡片</h3>
+                      <div class="flex space-x-4">
+                        <div>
+                          <p class="text-sm text-gray-500">步数</p>
+                          <p class="font-bold" id="memory-moves">0</p>
+                        </div>
+                        <div>
+                          <p class="text-sm text-gray-500">已匹配</p>
+                          <p class="font-bold" id="memory-matches">0/8</p>
+                        </div>
+                        <button id="memory-restart" class="px-3 py-1 bg-primary text-white rounded hover:bg-primary/90 transition-colors">
+                          重新开始
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div id="memory-board" class="grid grid-cols-4 gap-4 max-w-md mx-auto">
+                      <!-- 卡片将动态生成 -->
+                    </div>
+                    
+                    <!-- 游戏结束弹窗 -->
+                    <div id="memory-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
+                      <div class="bg-white rounded-xl p-6 max-w-sm w-full text-center">
+                        <h3 class="text-xl font-bold mb-2">恭喜你！</h3>
+                        <p class="mb-4">你完成了记忆卡片游戏，用了 <span id="final-moves" class="font-bold"></span> 步</p>
+                        <button id="memory-play-again" class="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors">
+                          再玩一次
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- 猜数字游戏 -->
+                  <div id="number-game" class="game-container hidden">
+                    <div class="max-w-md mx-auto">
+                      <h3 class="text-xl font-bold mb-6 text-center">猜数字游戏</h3>
+                      
+                      <div class="bg-gray-50 p-6 rounded-lg mb-6">
+                        <p class="text-center mb-4">我已经想好了一个1到100之间的数字，试试看你能猜多少次猜对它！</p>
+                        <form id="number-guess-form" class="flex">
+                          <input type="number" id="guess-input" min="1" max="100" class="flex-grow px-4 py-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none" placeholder="输入你的猜测...">
+                          <button type="submit" class="px-4 py-2 bg-primary text-white rounded-r-lg hover:bg-primary/90 transition-colors">
+                            猜一猜
+                          </button>
+                        </form>
+                      </div>
+                      
+                      <div class="mb-6">
+                        <p class="text-sm font-medium mb-2">猜测记录：</p>
+                        <div id="guess-history" class="flex flex-wrap gap-2">
+                          <!-- 猜测记录将动态添加 -->
+                        </div>
+                      </div>
+                      
+                      <div class="text-center" id="guess-feedback">
+                        <!-- 反馈信息将在这里显示 -->
+                      </div>
+                      
+                      <!-- 游戏结束弹窗 -->
+                      <div id="number-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
+                        <div class="bg-white rounded-xl p-6 max-w-sm w-full text-center">
+                          <h3 class="text-xl font-bold mb-2">恭喜你猜对了！</h3>
+                          <p class="mb-4">这个数字就是 <span id="correct-number" class="font-bold"></span>，你用了 <span id="guess-count" class="font-bold"></span> 次猜对它</p>
+                          <button id="number-play-again" class="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors">
+                            再玩一次
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 个人资料页面 -->
+        <div id="profile-page" class="hidden">
+          <div class="container mx-auto px-4 py-8">
+            <div class="bg-white rounded-xl p-6 mb-8 card-shadow">
+              <div class="flex flex-col md:flex-row">
+                <!-- 头像和基本信息 -->
+                <div class="md:w-1/3 mb-6 md:mb-0 md:pr-6">
+                  <div class="flex flex-col items-center md:items-start">
+                    <img id="profile-avatar" src="https://picsum.photos/seed/user/100/100" alt="Profile avatar" class="w-32 h-32 rounded-full object-cover mb-4 border-4 border-white shadow-md">
+                    <h2 id="profile-username" class="text-2xl font-bold mb-1"></h2>
+                    <p id="profile-joined" class="text-gray-500 mb-4"></p>
+                    <button id="edit-profile-btn" class="px-4 py-2 rounded-md border border-primary text-primary hover:bg-primary/5 transition-colors">
+                      <i class="fa fa-edit mr-1"></i> 编辑资料
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- 详细资料 -->
+                <div class="md:w-2/3">
+                  <h3 class="text-xl font-bold mb-4">个人简介</h3>
+                  <p id="profile-bio" class="text-gray-700 mb-6">这个用户很懒，什么都没有留下</p>
+                  
+                  <div class="grid grid-cols-3 gap-4 text-center mb-6">
+                    <div class="bg-neutral rounded-lg p-4">
+                      <p class="text-2xl font-bold text-primary" id="profile-posts-count">0</p>
+                      <p class="text-gray-600">帖子</p>
+                    </div>
+                    <div class="bg-neutral rounded-lg p-4">
+                      <p class="text-2xl font-bold text-primary" id="profile-comments-count">0</p>
+                      <p class="text-gray-600">评论</p>
+                    </div>
+                    <div class="bg-neutral rounded-lg p-4">
+                      <p class="text-2xl font-bold text-primary" id="profile-likes-count">0</p>
+                      <p class="text-gray-600">获赞</p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 class="text-xl font-bold mb-4">联系信息</h3>
+                    <p class="text-gray-700 mb-2"><i class="fa fa-envelope text-primary mr-2"></i><span id="profile-email"></span></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 该用户的帖子 -->
+            <div>
+              <h3 class="text-xl font-bold mb-4">用户发布的帖子</h3>
+              <div id="profile-posts-container" class="space-y-6">
+                <!-- 帖子将动态加载 -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 我的帖子页面 -->
+        <div id="my-posts-page" class="hidden">
+          <div class="container mx-auto px-4 py-8">
+            <h2 class="text-2xl font-bold mb-6">我的帖子</h2>
+            <div id="user-posts-container" class="space-y-6">
+              <!-- 我的帖子将动态加载 -->
+              <div class="text-center py-12 text-gray-500" id="empty-my-posts">
+                <i class="fa fa-file-text-o text-4xl mb-3 opacity-50"></i>
+                <p>你还没有发布任何帖子</p>
+                <button id="create-first-post-btn" class="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+                  <i class="fa fa-pencil mr-1"></i> 发布第一条帖子
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </section>
-
-    <!-- 联系我部分 -->
-    <section id="contact" class="section">
-      <h2>联系我</h2>
-      <form class="contact-form">
-        <div class="form-group">
-          <label for="name">你的名字：</label>
-          <input type="text" id="name" placeholder="请输入名字">
-        </div>
-        <div class="form-group">
-          <label for="message">想对我说：</label>
-          <textarea id="message" placeholder="请输入内容"></textarea>
-        </div>
-        <button type="button" id="submitBtn">发送消息</button>
-      </form>
     </section>
   </main>
 
   <!-- 页脚 -->
-  <footer class="footer">
-    <p>© 2023 我的个人介绍页 | 用HTML、CSS和JS制作</p>
+  <footer class="bg-white border-t mt-12">
+    <div class="container mx-auto px-4 py-8">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="flex items-center space-x-2 mb-4 md:mb-0">
+          <i class="fa fa-bolt text-primary text-xl"></i>
+          <span class="font-bold text-primary">JoltTalk</span>
+        </div>
+        <div class="flex space-x-6 text-gray-500">
+          <a href="#" class="hover:text-primary transition-colors"><i class="fa fa-github text-xl"></i></a>
+          <a href="#" class="hover:text-primary transition-colors"><i class="fa fa-twitter text-xl"></i></a>
+          <a href="#" class="hover:text-primary transition-colors"><i class="fa fa-instagram text-xl"></i></a>
+        </div>
+      </div>
+      <div class="mt-6 text-center text-gray-500 text-sm">
+        &copy; 2023 JoltTalk 版权所有
+      </div>
+    </div>
   </footer>
 
-  <!-- 引入JS文件 -->
-  <script src="script.js"></script>
+  <!-- 登录模态框 -->
+  <div id="login-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-md card-shadow transform transition-all scale-95 opacity-0" id="login-modal-content">
+      <div class="p-6 border-b">
+        <div class="flex justify-between items-center">
+          <h3 class="text-xl font-bold">账号登录</h3>
+          <button class="modal-close text-gray-500 hover:text-gray-700">
+            <i class="fa fa-times text-xl"></i>
+          </button>
+        </div>
+      </div>
+      <form id="login-form" class="p-6 space-y-4">
+        <div>
+          <label for="login-username" class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+              <i class="fa fa-user"></i>
+            </span>
+            <input type="text" id="login-username" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" placeholder="请输入用户名">
+          </div>
+        </div>
+        <div>
+          <label for="login-password" class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+              <i class="fa fa-lock"></i>
+            </span>
+            <input type="password" id="login-password" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" placeholder="请输入密码">
+          </div>
+        </div>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <input type="checkbox" id="remember-me" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+            <label for="remember-me" class="ml-2 block text-sm text-gray-700">记住我</label>
+          </div>
+          <a href="#" class="text-sm text-primary hover:text-primary/80">忘记密码？</a>
+        </div>
+        <button type="submit" class="w-full py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium">
+          登录
+        </button>
+      </form>
+      <div class="p-6 border-t text-center">
+        <p class="text-gray-600">还没有账号？ <button id="switch-to-register" class="text-primary font-medium hover:underline">立即注册</button></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 注册模态框 -->
+  <div id="register-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-md card-shadow transform transition-all scale-95 opacity-0" id="register-modal-content">
+      <div class="p-6 border-b">
+        <div class="flex justify-between items-center">
+          <h3 class="text-xl font-bold">账号注册</h3>
+          <button class="modal-close text-gray-500 hover:text-gray-700">
+            <i class="fa fa-times text-xl"></i>
+          </button>
+        </div>
+      </div>
+      <form id="register-form" class="p-6 space-y-4">
+        <div>
+          <label for="register-username" class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+              <i class="fa fa-user"></i>
+            </span>
+            <input type="text" id="register-username" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" placeholder="请设置用户名">
+          </div>
+        </div>
+        <div>
+          <label for="register-email" class="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+              <i class="fa fa-envelope"></i>
+            </span>
+            <input type="email" id="register-email" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" placeholder="请输入邮箱">
+          </div>
+        </div>
+        <div>
+          <label for="register-password" class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+              <i class="fa fa-lock"></i>
+            </span>
+            <input type="password" id="register-password" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" placeholder="请设置密码（至少6位）">
+          </div>
+        </div>
+        <div>
+          <label for="register-confirm" class="block text-sm font-medium text-gray-700 mb-1">确认密码</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+              <i class="fa fa-lock"></i>
+            </span>
+            <input type="password" id="register-confirm" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" placeholder="请再次输入密码">
+          </div>
+        </div>
+        <button type="submit" class="w-full py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium">
+          注册
+        </button>
+      </form>
+      <div class="p-6 border-t text-center">
+        <p class="text-gray-600">已有账号？ <button id="switch-to-login" class="text-primary font-medium hover:underline">立即登录</button></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 编辑资料模态框 -->
+  <div id="edit-profile-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-md card-shadow transform transition-all scale-95 opacity-0" id="edit-profile-modal-content">
+      <div class="p-6 border-b">
+        <div class="flex justify-between items-center">
+          <h3 class="text-xl font-bold">编辑个人资料</h3>
+          <button class="modal-close text-gray-500 hover:text-gray-700">
+            <i class="fa fa-times text-xl"></i>
+          </button>
+        </div>
+      </div>
+      <form id="edit-profile-form" class="p-6 space-y-4">
+        <div>
+          <label for="edit-bio" class="block text-sm font-medium text-gray-700 mb-1">个人简介</label>
+          <textarea id="edit-bio" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" placeholder="介绍一下自己吧"></textarea>
+        </div>
+        <div>
+          <label for="edit-email" class="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
+          <input type="email" id="edit-email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all">
+        </div>
+        <button type="submit" class="w-full py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium">
+          保存更改
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 确认删除模态框 -->
+  <div id="delete-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-md card-shadow transform transition-all scale-95 opacity-0" id="delete-modal-content">
+      <div class="p-6 border-b">
+        <div class="flex justify-between items-center">
+          <h3 class="text-xl font-bold">确认删除</h3>
+          <button class="modal-close text-gray-500 hover:text-gray-700">
+            <i class="fa fa-times text-xl"></i>
+          </button>
+        </div>
+      </div>
+      <div class="p-6">
+        <p class="text-gray-700 mb-6">你确定要删除这条帖子吗？此操作无法撤销。</p>
+        <div class="flex space-x-3">
+          <button id="cancel-delete" class="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+            取消
+          </button>
+          <button id="confirm-delete" class="flex-1 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+            确认删除
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 消息提示框 -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-dark text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 flex items-center z-50">
+    <i id="toast-icon" class="fa fa-check-circle mr-2"></i>
+    <span id="toast-message"></span>
+  </div>
+
+  <script>
+    // 数据存储与管理
+    const DataStore = {
+      // 初始化本地存储
+      init() {
+        if (!localStorage.getItem('users')) {
+          localStorage.setItem('users', JSON.stringify([]));
+        }
+        if (!localStorage.getItem('posts')) {
+          localStorage.setItem('posts', JSON.stringify([]));
+        }
+        if (!localStorage.getItem('comments')) {
+          localStorage.setItem('comments', JSON.stringify([]));
+        }
+        if (!localStorage.getItem('likes')) {
+          localStorage.setItem('likes', JSON.stringify([]));
+        }
+        if (!localStorage.getItem('gameScores')) {
+          localStorage.setItem('gameScores', JSON.stringify({
+            memory: [],
+            number: []
+          }));
+        }
+        if (!localStorage.getItem('currentUser')) {
+          localStorage.setItem('currentUser', null);
+        }
+      },
+      
+      // 用户相关方法
+      getUsers() {
+        return JSON.parse(localStorage.getItem('users') || '[]');
+      },
+      
+      addUser(user) {
+        const users = this.getUsers();
+        users.push(user);
+        localStorage.setItem('users', JSON.stringify(users));
+      },
+      
+      updateUser(updatedUser) {
+        const users = this.getUsers();
+        const index = users.findIndex(user => user.id === updatedUser.id);
+        if (index !== -1) {
+          users[index] = { ...users[index], ...updatedUser };
+          localStorage.setItem('users', JSON.stringify(users));
+          
+          // 如果更新的是当前用户，同步更新currentUser
+          const currentUser = this.getCurrentUser();
+          if (currentUser && currentUser.id === updatedUser.id) {
+            this.setCurrentUser(users[index]);
+          }
+        }
+      },
+      
+      getUserByUsername(username) {
+        return this.getUsers().find(user => user.username === username);
+      },
+      
+      getUserById(id) {
+        return this.getUsers().find(user => user.id === id);
+      },
+      
+      getActiveUsers() {
+        // 简单的活跃用户计算：按发布内容数量排序
+        const users = this.getUsers();
+        const posts = this.getPosts();
+        
+        // 计算每个用户的帖子数量
+        const userPostCounts = {};
+        users.forEach(user => {
+          userPostCounts[user.id] = posts.filter(post => post.userId === user.id).length;
+        });
+        
+        // 按帖子数量排序并返回前5名
+        return [...users]
+          .sort((a, b) => (userPostCounts[b.id] || 0) - (userPostCounts[a.id] || 0))
+          .slice(0, 5);
+      },
+      
+      setCurrentUser(user) {
+        localStorage.setItem('currentUser', JSON.stringify(user));
+      },
+      
+      getCurrentUser() {
+        return JSON.parse(localStorage.getItem('currentUser'));
+      },
+      
+      clearCurrentUser() {
+        localStorage.setItem('currentUser', null);
+      },
+      
+      // 帖子相关方法
+      getPosts(category = 'all') {
+        let posts = JSON.parse(localStorage.getItem('posts') || '[]');
+        
+        // 如果指定了分类，进行筛选
+        if (category !== 'all') {
+          posts = posts.filter(post => post.category === category);
+        }
+        
+        return posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      },
+      
+      getPopularPosts() {
+        // 按点赞数排序
+        const posts = JSON.parse(localStorage.getItem('posts') || '[]');
+        const likes = this.getLikes();
+        
+        // 计算每个帖子的点赞数
+        const postLikeCounts = {};
+        posts.forEach(post => {
+          postLikeCounts[post.id] = likes.filter(like => like.postId === post.id).length;
+        });
+        
+        return [...posts]
+          .sort((a, b) => (postLikeCounts[b.id] || 0) - (postLikeCounts[a.id] || 0))
+          .slice(0, 3);
+      },
+      
+      getPostsByUserId(userId) {
+        return JSON.parse(localStorage.getItem('posts') || '[]')
+          .filter(post => post.userId === userId)
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      },
+      
+      deletePost(postId) {
+        let posts = this.getPosts();
+        posts = posts.filter(post => post.id !== postId);
+        localStorage.setItem('posts', JSON.stringify(posts));
+        
+        // 同时删除该帖子的评论
+        let comments = this.getComments();
+        comments = comments.filter(comment => comment.postId !== postId);
+        localStorage.setItem('comments', JSON.stringify(comments));
+        
+        // 同时删除该帖子的点赞
+        let likes = this.getLikes();
+        likes = likes.filter(like => like.postId !== postId);
+        localStorage.setItem('likes', JSON.stringify(likes));
+      },
+      
+      getPostCountByCategory() {
+        const posts = this.getPosts();
+        const counts = {
+          tech: 0,
+          life: 0,
+          work: 0,
+          study: 0,
+          entertainment: 0
+        };
+        
+        posts.forEach(post => {
+          if (counts.hasOwnProperty(post.category)) {
+            counts[post.category]++;
+          }
+        });
+        
+        return counts;
+      },
+      
+      addPost(post) {
+        const posts = this.getPosts();
+        posts.push(post);
+        localStorage.setItem('posts', JSON.stringify(posts));
+        return post;
+      },
+      
+      getPostById(id) {
+        return this.getPosts().find(post => post.id === id);
+      },
+      
+      // 评论相关方法
+      getComments() {
+        return JSON.parse(localStorage.getItem('comments') || '[]');
+      },
+      
+      getCommentsByPostId(postId) {
+        return this.getComments()
+          .filter(comment => comment.postId === postId)
+          .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      },
+      
+      getCommentCountByUserId(userId) {
+        return this.getComments().filter(comment => comment.userId === userId).length;
+      },
+      
+      addComment(comment) {
+        const comments = this.getComments();
+        comments.push(comment);
+        localStorage.setItem('comments', JSON.stringify(comments));
+        return comment;
+      },
+      
+      // 点赞相关方法
+      getLikes() {
+        return JSON.parse(localStorage.getItem('likes') || '[]');
+      },
+      
+      getLikesByPostId(postId) {
+        return this.getLikes().filter(like => like.postId === postId);
+      },
+      
+      getLikeCountByPostId(postId) {
+        return this.getLikesByPostId(postId).length;
+      },
+      
+      hasUserLikedPost(userId, postId) {
+        return this.getLikes().some(like => like.userId === userId && like.postId === postId);
+      },
+      
+      toggleLike(userId, postId) {
+        const likes = this.getLikes();
+        const existingLikeIndex = likes.findIndex(like => like.userId === userId && like.postId === postId);
+        
+        if (existingLikeIndex !== -1) {
+          // 取消点赞
+          likes.splice(existingLikeIndex, 1);
+          localStorage.setItem('likes', JSON.stringify(likes));
+          return false; // 已取消
+        } else {
+          // 添加点赞
+          likes.push({
+            id: Utils.generateId(),
+            userId,
+            postId,
+            createdAt: new Date().toISOString()
+          });
+          localStorage.setItem('likes', JSON.stringify(likes));
+          return true; // 已点赞
+        }
+      },
+      
+      getLikeCountByUserId(userId) {
+        const likes = this.getLikes();
+        const userPosts = this.getPostsByUserId(userId);
+        const userPostIds = userPosts.map(post => post.id);
+        
+        // 计算用户所有帖子的获赞总数
+        return likes.filter(like => userPostIds.includes(like.postId)).length;
+      },
+      
+      // 游戏分数相关
+      saveGameScore(game, score) {
+        const currentUser = this.getCurrentUser();
+        if (!currentUser) return;
+        
+        const scores = JSON.parse(localStorage.getItem('gameScores') || '{"memory":[],"number":[]}');
+        scores[game].push({
+          userId: currentUser.id,
+          username: currentUser.username,
+          score,
+          date: new Date().toISOString()
+        });
+        
+        // 只保留最好的10个分数
+        scores[game].sort((a, b) => a.score - b.score).slice(0, 10);
+        localStorage.setItem('gameScores', JSON.stringify(scores));
+      },
+      
+      getGameScores(game) {
+        const scores = JSON.parse(localStorage.getItem('gameScores') || '{"memory":[],"number":[]}');
+        return scores[game] || [];
+      }
+    };
+
+    // 工具函数
+    const Utils = {
+      // 生成唯一ID
+      generateId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+      },
+      
+      // 格式化日期
+      formatDate(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMins / 60);
+        const diffDays = Math.floor(diffHours / 24);
+        const diffWeeks = Math.floor(diffDays / 7);
+        const diffMonths = Math.floor(diffDays / 30);
+        
+        if (diffMins < 1) return '刚刚';
+        if (diffMins < 60) return `${diffMins}分钟前`;
+        if (diffHours < 24) return `${diffHours}小时前`;
+        if (diffDays < 7) return `${diffDays}天前`;
+        if (diffWeeks < 4) return `${diffWeeks}周前`;
+        if (diffMonths < 12) return `${diffMonths}个月前`;
+        
+        return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+      },
+      
+      // 显示提示消息
+      showToast(message, isError = false) {
+        const toast = document.getElementById('toast');
+        const toastIcon = document.getElementById('toast-icon');
+        const toastMessage = document.getElementById('toast-message');
+        
+        toastMessage.textContent = message;
+        toastIcon.className = isError ? 'fa fa-exclamation-circle mr-2' : 'fa fa-check-circle mr-2';
+        toast.classList.remove('translate-y-20', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+        
+        setTimeout(() => {
+          toast.classList.remove('translate-y-0', 'opacity-100');
+          toast.classList.add('translate-y-20', 'opacity-0');
+        }, 3000);
+      },
+      
+      // 验证邮箱格式
+      validateEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+      },
+      
+      // 搜索功能
+      searchPosts(query) {
+        if (!query.trim()) return DataStore.getPosts();
+        
+        const lowerQuery = query.toLowerCase().trim();
+        return DataStore.getPosts().filter(post => 
+          post.content.toLowerCase().includes(lowerQuery) ||
+          DataStore.getUserById(post.userId)?.username.toLowerCase().includes(lowerQuery) ||
+          App.getCategoryName(post.category).toLowerCase().includes(lowerQuery)
+        );
+      }
+    };
+
+    // 游戏管理
+    const GameManager = {
+      // 记忆卡片游戏
+      memory: {
+        cards: [],
+        flippedCards: [],
+        matchedPairs: 0,
+        moves: 0,
+        isProcessing: false,
+        
+        init() {
+          this.reset();
+          this.createCards();
+          this.renderBoard();
+          this.setupEventListeners();
+        },
+        
+        createCards() {
+          // 创建8对卡片
+          const icons = ['fa-heart', 'fa-star', 'fa-bell', 'fa-coffee', 'fa-car', 'fa-plane', 'fa-rocket', 'fa-gamepad'];
+          const pairs = [...icons, ...icons];
+          
+          // 洗牌
+          this.cards = this.shuffleArray(pairs).map((icon, index) => ({
+            id: index,
+            icon,
+            flipped: false,
+            matched: false
+          }));
+        },
+        
+        shuffleArray(array) {
+          const newArray = [...array];
+          for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+          }
+          return newArray;
+        },
+        
+        renderBoard() {
+          const board = document.getElementById('memory-board');
+          board.innerHTML = '';
+          
+          this.cards.forEach(card => {
+            const cardElement = document.createElement('div');
+            cardElement.className = `game-cell aspect-square rounded-lg ${card.flipped ? 'bg-white' : 'bg-primary'} flex items-center justify-center cursor-pointer`;
+            cardElement.dataset.id = card.id;
+            
+            const iconElement = document.createElement('i');
+            iconElement.className = `fa ${card.icon} text-2xl ${card.flipped ? 'text-primary' : 'text-white opacity-0'}`;
+            
+            cardElement.appendChild(iconElement);
+            board.appendChild(cardElement);
+          });
+          
+          // 更新分数
+          document.getElementById('memory-moves').textContent = this.moves;
+          document.getElementById('memory-matches').textContent = `${this.matchedPairs}/8`;
+        },
+        
+        flipCard(cardId) {
+          if (this.isProcessing || this.flippedCards.length >= 2) return;
+          
+          const card = this.cards[cardId];
+          if (card.flipped || card.matched) return;
+          
+          // 翻牌
+          card.flipped = true;
+          this.flippedCards.push(card);
+          this.renderBoard();
+          
+          // 如果翻了两张牌，检查是否匹配
+          if (this.flippedCards.length === 2) {
+            this.moves++;
+            this.isProcessing = true;
+            
+            setTimeout(() => {
+              this.checkForMatch();
+              this.isProcessing = false;
+            }, 1000);
+          }
+        },
+        
+        checkForMatch() {
+          const [card1, card2] = this.flippedCards;
+          
+          if (card1.icon === card2.icon) {
+            // 匹配成功
+            card1.matched = true;
+            card2.matched = true;
+            this.matchedPairs++;
+            
+            // 更新分数
+            document.getElementById('memory-matches').textContent = `${this.matchedPairs}/8`;
+            
+            // 检查游戏是否结束
+            if (this.matchedPairs === 8) {
+              setTimeout(() => {
+                this.endGame();
+              }, 500);
+            }
+          } else {
+            // 匹配失败，翻回去
+            card1.flipped = false;
+            card2.flipped = false;
+          }
+          
+          this.flippedCards = [];
+          this.renderBoard();
+        },
+        
+        endGame() {
+          document.getElementById('final-moves').textContent = this.moves;
+          document.getElementById('memory-modal').classList.remove('hidden');
+          
+          // 保存分数
+          DataStore.saveGameScore('memory', this.moves);
+        },
+        
+        reset() {
+          this.cards = [];
+          this.flippedCards = [];
+          this.matchedPairs = 0;
+          this.moves = 0;
+          this.isProcessing = false;
+        },
+        
+        setupEventListeners() {
+          const board = document.getElementById('memory-board');
+          board.addEventListener('click', (e) => {
+            const cardElement = e.target.closest('[data-id]');
+            if (cardElement) {
+              this.flipCard(parseInt(cardElement.dataset.id));
+            }
+          });
+          
+          document.getElementById('memory-restart').addEventListener('click', () => {
+            this.init();
+          });
+          
+          document.getElementById('memory-play-again').addEventListener('click', () => {
+            document.getElementById('memory-modal').classList.add('hidden');
+            this.init();
+          });
+        }
+      },
+      
+      // 猜数字游戏
+      number: {
+        secretNumber: null,
+        attempts: 0,
+        guessHistory: [],
+        
+        init() {
+          this.reset();
+          this.secretNumber = Math.floor(Math.random() * 100) + 1;
+          this.setupEventListeners();
+        },
+        
+        makeGuess(guess) {
+          if (guess < 1 || guess > 100) {
+            this.showFeedback('请输入1到100之间的数字', 'orange');
+            return;
+          }
+          
+          this.attempts++;
+          this.guessHistory.push(guess);
+          
+          // 记录猜测
+          this.recordGuess(guess);
+          
+          // 检查猜测结果
+          if (guess === this.secretNumber) {
+            this.showFeedback(`恭喜你猜对了！答案就是${this.secretNumber}`, 'green');
+            this.endGame();
+            return true;
+          } else if (guess < this.secretNumber) {
+            this.showFeedback('太小了，再试一次', 'blue');
+          } else {
+            this.showFeedback('太大了，再试一次', 'red');
+          }
+          
+          return false;
+        },
+        
+        recordGuess(guess) {
+          const historyContainer = document.getElementById('guess-history');
+          const guessElement = document.createElement('span');
+          guessElement.className = `px-2 py-1 rounded-full text-sm ${
+            guess < this.secretNumber ? 'bg-blue-100 text-blue-800' : 
+            guess > this.secretNumber ? 'bg-red-100 text-red-800' : 
+            'bg-green-100 text-green-800'
+          }`;
+          guessElement.textContent = guess;
+          historyContainer.appendChild(guessElement);
+          
+          // 清空输入框
+          document.getElementById('guess-input').value = '';
+        },
+        
+        showFeedback(message, color) {
+          const feedbackElement = document.getElementById('guess-feedback');
+          feedbackElement.innerHTML = `<p class="text-${color}-600 font-medium">${message}</p>`;
+        },
+        
+        endGame() {
+          document.getElementById('correct-number').textContent = this.secretNumber;
+          document.getElementById('guess-count').textContent = this.attempts;
+          document.getElementById('number-modal').classList.remove('hidden');
+          
+          // 保存分数
+          DataStore.saveGameScore('number', this.attempts);
+        },
+        
+        reset() {
+          this.secretNumber = null;
+          this.attempts = 0;
+          this.guessHistory = [];
+          
+          // 清空界面
+          document.getElementById('guess-history').innerHTML = '';
+          document.getElementById('guess-feedback').innerHTML = '';
+          document.getElementById('guess-input').value = '';
+        },
+        
+        setupEventListeners() {
+          document.getElementById('number-guess-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const guessInput = document.getElementById('guess-input');
+            const guess = parseInt(guessInput.value, 10);
+            
+            if (!isNaN(guess)) {
+              this.makeGuess(guess);
+            }
+          });
+          
+          document.getElementById('number-play-again').addEventListener('click', () => {
+            document.getElementById('number-modal').classList.add('hidden');
+            this.init();
+          });
+        }
+      },
+      
+      // 切换游戏
+      switchGame(gameName) {
+        // 隐藏所有游戏
+        document.querySelectorAll('.game-container').forEach(container => {
+          container.classList.add('hidden');
+        });
+        
+        // 更新游戏选择按钮样式
+        document.querySelectorAll('.game-select-btn').forEach(btn => {
+          if (btn.dataset.game === gameName) {
+            btn.classList.remove('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+            btn.classList.add('bg-primary', 'text-white');
+          } else {
+            btn.classList.remove('bg-primary', 'text-white');
+            btn.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+          }
+        });
+        
+        // 更新游戏说明
+        const instructions = {
+          memory: `
+            <h4 class="font-bold mb-2">记忆卡片</h4>
+            <p class="text-gray-600 text-sm">
+              翻牌配对游戏，找出所有相同的卡片对。<br>
+              尽量用最少的步数完成，挑战你的记忆力！
+            </p>
+          `,
+          number: `
+            <h4 class="font-bold mb-2">猜数字</h4>
+            <p class="text-gray-600 text-sm">
+              系统会随机生成一个1到100之间的数字。<br>
+              你需要猜测这个数字，系统会提示你猜大了还是猜小了。<br>
+              用最少的次数猜对数字吧！
+            </p>
+          `
+        };
+        document.getElementById('game-instructions').innerHTML = instructions[gameName];
+        
+        // 显示选中的游戏并初始化
+        document.getElementById(`${gameName}-game`).classList.remove('hidden');
+        
+        if (gameName === 'memory') {
+          this.memory.init();
+        } else if (gameName === 'number') {
+          this.number.init();
+        }
+      }
+    };
+
+    // 主应用逻辑
+    const App = {
+      currentPage: 'home',
+      currentCategory: 'all',
+      postToDelete: null,
+      
+      // 初始化应用
+      init() {
+        DataStore.init();
+        this.setupEventListeners();
+        this.initCarousel();
+        this.checkAuthStatus();
+      },
+      
+      // 初始化轮播
+      initCarousel() {
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.carousel-item');
+        const dots = document.querySelectorAll('.carousel-dot');
+        const totalSlides = slides.length;
+        
+        // 轮播函数
+        const showSlide = (index) => {
+          // 隐藏所有幻灯片
+          slides.forEach(slide => slide.classList.remove('active'));
+          dots.forEach(dot => dot.classList.remove('bg-white', 'active'));
+          dots.forEach(dot => dot.classList.add('bg-white/50'));
+          
+          // 显示当前幻灯片
+          slides[index].classList.add('active');
+          dots[index].classList.remove('bg-white/50');
+          dots[index].classList.add('bg-white', 'active');
+        };
+        
+        // 下一张
+        const nextSlide = () => {
+          currentSlide = (currentSlide + 1) % totalSlides;
+          showSlide(currentSlide);
+        };
+        
+        // 上一张
+        const prevSlide = () => {
+          currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+          showSlide(currentSlide);
+        };
+        
+        // 自动轮播
+        let carouselInterval = setInterval(nextSlide, 5000);
+        
+        // 事件监听
+        document.getElementById('carousel-next').addEventListener('click', () => {
+          clearInterval(carouselInterval);
+          nextSlide();
+          carouselInterval = setInterval(nextSlide, 5000);
+        });
+        
+        document.getElementById('carousel-prev').addEventListener('click', () => {
+          clearInterval(carouselInterval);
+          prevSlide();
+          carouselInterval = setInterval(nextSlide, 5000);
+        });
+        
+        dots.forEach((dot, index) => {
+          dot.addEventListener('click', () => {
+            clearInterval(carouselInterval);
+            currentSlide = index;
+            showSlide(currentSlide);
+            carouselInterval = setInterval(nextSlide, 5000);
+          });
+        });
+      },
+      
+      // 设置事件监听器
+      setupEventListeners() {
+        // 导航栏和模态框相关
+        document.getElementById('login-btn').addEventListener('click', () => this.showModal('login-modal'));
+        document.getElementById('register-btn').addEventListener('click', () => this.showModal('register-modal'));
+        document.getElementById('mobile-login-btn').addEventListener('click', () => {
+          this.showModal('login-modal');
+          document.getElementById('mobile-menu').classList.add('hidden');
+        });
+        document.getElementById('mobile-register-btn').addEventListener('click', () => {
+          this.showModal('register-modal');
+          document.getElementById('mobile-menu').classList.add('hidden');
+        });
+        document.querySelectorAll('.welcome-login-btn').forEach(btn => {
+          btn.addEventListener('click', () => this.showModal('login-modal'));
+        });
+        document.querySelectorAll('.welcome-register-btn').forEach(btn => {
+          btn.addEventListener('click', () => this.showModal('register-modal'));
+        });
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+          document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+        document.getElementById('switch-to-register').addEventListener('click', (e) => {
+          e.preventDefault();
+          this.hideModal('login-modal');
+          this.showModal('register-modal');
+        });
+        document.getElementById('switch-to-login').addEventListener('click', (e) => {
+          e.preventDefault();
+          this.hideModal('register-modal');
+          this.showModal('login-modal');
+        });
+        document.querySelectorAll('.modal-close').forEach(btn => {
+          btn.addEventListener('click', () => {
+            this.hideModal('login-modal');
+            this.hideModal('register-modal');
+            this.hideModal('edit-profile-modal');
+            this.hideModal('delete-modal');
+          });
+        });
+        
+        // 点击模态框外部关闭
+        document.getElementById('login-modal').addEventListener('click', (e) => {
+          if (e.target === document.getElementById('login-modal')) this.hideModal('login-modal');
+        });
+        document.getElementById('register-modal').addEventListener('click', (e) => {
+          if (e.target === document.getElementById('register-modal')) this.hideModal('register-modal');
+        });
+        document.getElementById('edit-profile-modal').addEventListener('click', (e) => {
+          if (e.target === document.getElementById('edit-profile-modal')) this.hideModal('edit-profile-modal');
+        });
+        document.getElementById('delete-modal').addEventListener('click', (e) => {
+          if (e.target === document.getElementById('delete-modal')) this.hideModal('delete-modal');
+        });
+        
+        // 登录和注册表单提交
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          this.handleLogin();
+        });
+        document.getElementById('register-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          this.handleRegister();
+        });
+        
+        // 登出
+        document.getElementById('logout-btn').addEventListener('click', () => {
+          this.handleLogout();
+        });
+        
+        // 发布帖子
+        document.getElementById('post-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          this.handleCreatePost();
+        });
+        document.getElementById('new-post-btn').addEventListener('click', () => {
+          this.navigateTo('forum');
+          document.getElementById('post-content').focus();
+        });
+        document.getElementById('home-new-post-btn').addEventListener('click', () => {
+          this.navigateTo('forum');
+          document.getElementById('post-content').focus();
+        });
+        document.getElementById('create-first-post-btn').addEventListener('click', () => {
+          this.navigateTo('forum');
+          document.getElementById('post-content').focus();
+        });
+        
+        // 用户菜单交互
+        const userDropdown = document.getElementById('user-dropdown');
+        const userMenuTrigger = document.getElementById('user-menu-trigger');
+        const userDropdownMenu = document.getElementById('user-dropdown-menu');
+        const dropdownIcon = document.getElementById('dropdown-icon');
+        
+        userMenuTrigger.addEventListener('click', () => {
+          userDropdownMenu.classList.toggle('hidden');
+          dropdownIcon.classList.toggle('rotate-180');
+        });
+        
+        // 当鼠标离开整个下拉区域时关闭
+        userDropdown.addEventListener('mouseleave', () => {
+          setTimeout(() => {
+            if (!userDropdownMenu.matches(':hover') && !userMenuTrigger.matches(':hover')) {
+              userDropdownMenu.classList.add('hidden');
+              dropdownIcon.classList.remove('rotate-180');
+            }
+          }, 100);
+        });
+        
+        // 页面导航
+        document.getElementById('nav-home').addEventListener('click', (e) => {
+          e.preventDefault();
+          this.navigateTo('home');
+        });
+        document.getElementById('nav-forum').addEventListener('click', (e) => {
+          e.preventDefault();
+          this.navigateTo('forum');
+        });
+        document.getElementById('nav-games').addEventListener('click', (e) => {
+          e.preventDefault();
+          this.navigateTo('games');
+        });
+        document.getElementById('mobile-nav-home').addEventListener('click', (e) => {
+          e.preventDefault();
+          this.navigateTo('home');
+          document.getElementById('mobile-menu').classList.add('hidden');
+        });
+        document.getElementById('mobile-nav-forum').addEventListener('click', (e) => {
+          e.preventDefault();
+          this.navigateTo('forum');
+          document.getElementById('mobile-menu').classList.add('hidden');
+        });
+        document.getElementById('mobile-nav-games').addEventListener('click', (e) => {
+          e.preventDefault();
+          this.navigateTo('games');
+          document.getElementById('mobile-menu').classList.add('hidden');
+        });
+        
+        // 快捷导航
+        document.getElementById('quick-forum').addEventListener('click', (e) => {
+          e.preventDefault();
+          this.navigateTo('forum');
+        });
+        document.getElementById('quick-myposts').addEventListener('click', (e) => {
+          e.preventDefault();
+          this.navigateTo('my-posts');
+        });
+        document.getElementById('quick-profile').addEventListener('click', (e) => {
+          e.preventDefault();
+          this.navigateTo('profile');
+        });
+        document.getElementById('quick-games').addEventListener('click', (e) => {
+          e.preventDefault();
+          this.navigateTo('games');
+        });
+        document.getElementById('view-all-posts').addEventListener('click', (e) => {
+          e.preventDefault();
+          this.navigateTo('forum');
+        });
+        
+        // 游戏卡片点击
+        document.querySelectorAll('.game-card').forEach(card => {
+          card.addEventListener('click', () => {
+            this.navigateTo('games');
+            setTimeout(() => {
+              GameManager.switchGame(card.dataset.game);
+            }, 300);
+          });
+        });
+        
+        // 游戏选择
+        document.querySelectorAll('.game-select-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            GameManager.switchGame(btn.dataset.game);
+          });
+        });
+        
+        // 用户菜单导航
+        document.getElementById('profile-link').addEventListener('click', (e) => {
+          e.preventDefault();
+          this.navigateTo('profile');
+          userDropdownMenu.classList.add('hidden');
+          dropdownIcon.classList.remove('rotate-180');
+        });
+        document.getElementById('my-posts-link').addEventListener('click', (e) => {
+          e.preventDefault();
+          this.navigateTo('my-posts');
+          userDropdownMenu.classList.add('hidden');
+          dropdownIcon.classList.remove('rotate-180');
+        });
+        
+        // 帖子分类筛选
+        document.querySelectorAll('.category-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const category = btn.getAttribute('data-category');
+            this.currentCategory = category;
+            
+            // 更新按钮样式
+            document.querySelectorAll('.category-btn').forEach(b => {
+              b.classList.remove('bg-primary', 'text-white');
+              b.classList.add('bg-white', 'text-gray-700', 'hover:bg-gray-100');
+            });
+            btn.classList.remove('bg-white', 'text-gray-700', 'hover:bg-gray-100');
+            btn.classList.add('bg-primary', 'text-white');
+            
+            this.loadPosts();
+          });
+        });
+        
+        // 分类链接
+        document.querySelectorAll('.category-link').forEach(link => {
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const category = link.getAttribute('data-category');
+            this.navigateTo('forum');
+            
+            setTimeout(() => {
+              // 触发对应分类按钮的点击事件
+              document.querySelector(`.category-btn[data-category="${category}"]`).click();
+            }, 300);
+          });
+        });
+        
+        // 搜索功能
+        document.getElementById('search-input').addEventListener('keyup', (e) => {
+          if (e.key === 'Enter') {
+            this.handleSearch(document.getElementById('search-input').value);
+          }
+        });
+        document.getElementById('mobile-search-input').addEventListener('keyup', (e) => {
+          if (e.key === 'Enter') {
+            this.handleSearch(document.getElementById('mobile-search-input').value);
+            document.getElementById('mobile-menu').classList.add('hidden');
+          }
+        });
+        
+        // 编辑资料
+        document.getElementById('edit-profile-btn').addEventListener('click', () => {
+          this.showEditProfileModal();
+        });
+        document.getElementById('edit-profile-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          this.handleUpdateProfile();
+        });
+        
+        // 删除帖子相关
+        document.getElementById('cancel-delete').addEventListener('click', () => {
+          this.hideModal('delete-modal');
+          this.postToDelete = null;
+        });
+        
+        document.getElementById('confirm-delete').addEventListener('click', () => {
+          if (this.postToDelete) {
+            DataStore.deletePost(this.postToDelete);
+            this.hideModal('delete-modal');
+            Utils.showToast('帖子已删除');
+            
+            // 刷新当前页面的帖子列表
+            if (this.currentPage === 'forum') {
+              this.loadPosts();
+            } else if (this.currentPage === 'profile' || this.currentPage === 'my-posts') {
+              this.loadMyPostsPage();
+              this.loadProfilePage();
+            }
+            
+            this.postToDelete = null;
+          }
+        });
+      },
+      
+      // 导航到指定页面
+      navigateTo(page) {
+        this.currentPage = page;
+        
+        // 隐藏所有页面
+        document.getElementById('home-page').classList.add('hidden');
+        document.getElementById('forum-page').classList.add('hidden');
+        document.getElementById('games-page').classList.add('hidden');
+        document.getElementById('profile-page').classList.add('hidden');
+        document.getElementById('my-posts-page').classList.add('hidden');
+        
+        // 显示目标页面
+        document.getElementById(`${page}-page`).classList.remove('hidden');
+        
+        // 更新导航样式
+        document.getElementById('nav-home').classList.remove('nav-active');
+        document.getElementById('nav-forum').classList.remove('nav-active');
+        document.getElementById('nav-games').classList.remove('nav-active');
+        document.getElementById('mobile-nav-home').classList.remove('nav-active');
+        document.getElementById('mobile-nav-forum').classList.remove('nav-active');
+        document.getElementById('mobile-nav-games').classList.remove('nav-active');
+        
+        if (page === 'home') {
+          document.getElementById('nav-home').classList.add('nav-active');
+          document.getElementById('mobile-nav-home').classList.add('nav-active');
+          this.loadHomePage();
+        } else if (page === 'forum') {
+          document.getElementById('nav-forum').classList.add('nav-active');
+          document.getElementById('mobile-nav-forum').classList.add('nav-active');
+          this.loadPosts();
+        } else if (page === 'games') {
+          document.getElementById('nav-games').classList.add('nav-active');
+          document.getElementById('mobile-nav-games').classList.add('nav-active');
+          GameManager.switchGame('memory'); // 默认显示记忆卡片游戏
+        } else if (page === 'profile') {
+          this.loadProfilePage();
+        } else if (page === 'my-posts') {
+          this.loadMyPostsPage();
+        }
+      },
+      
+      // 检查用户登录状态
+      checkAuthStatus() {
+        const currentUser = DataStore.getCurrentUser();
+        if (currentUser) {
+          this.showContentSection();
+          this.navigateTo('home');
+        } else {
+          this.showWelcomeSection();
+        }
+      },
+      
+      // 显示欢迎区域（未登录）
+      showWelcomeSection() {
+        document.getElementById('welcome-section').classList.remove('hidden');
+        document.getElementById('content-section').classList.add('hidden');
+        document.getElementById('auth-buttons').classList.remove('hidden');
+        document.getElementById('user-menu-container').classList.add('hidden');
+      },
+      
+      // 显示内容区域（已登录）
+      showContentSection() {
+        const currentUser = DataStore.getCurrentUser();
+        if (currentUser) {
+          document.getElementById('username-display').textContent = currentUser.username;
+          document.getElementById('user-avatar').src = `https://picsum.photos/seed/${currentUser.id}/40/40`;
+          document.getElementById('post-form-avatar').src = `https://picsum.photos/seed/${currentUser.id}/40/40`;
+          
+          document.getElementById('welcome-section').classList.add('hidden');
+          document.getElementById('content-section').classList.remove('hidden');
+          document.getElementById('auth-buttons').classList.add('hidden');
+          document.getElementById('user-menu-container').classList.remove('hidden');
+        }
+      },
+      
+      // 显示模态框
+      showModal(modalId) {
+        const modal = document.getElementById(modalId);
+        const modalContent = document.getElementById(`${modalId}-content`);
+        
+        modal.classList.remove('hidden');
+        // 触发动画
+        setTimeout(() => {
+          modalContent.classList.remove('scale-95', 'opacity-0');
+          modalContent.classList.add('scale-100', 'opacity-100');
+        }, 10);
+      },
+      
+      // 隐藏模态框
+      hideModal(modalId) {
+        const modal = document.getElementById(modalId);
+        const modalContent = document.getElementById(`${modalId}-content`);
+        
+        modalContent.classList.remove('scale-100', 'opacity-100');
+        modalContent.classList.add('scale-95', 'opacity-0');
+        
+        setTimeout(() => {
+          modal.classList.add('hidden');
+          // 重置表单
+          const form = modal.querySelector('form');
+          if (form) form.reset();
+        }, 200);
+      },
+      
+      // 显示编辑资料模态框
+      showEditProfileModal() {
+        const currentUser = DataStore.getCurrentUser();
+        if (currentUser) {
+          document.getElementById('edit-bio').value = currentUser.bio || '';
+          document.getElementById('edit-email').value = currentUser.email || '';
+          this.showModal('edit-profile-modal');
+        }
+      },
+      
+      // 显示删除确认模态框
+      showDeleteModal(postId) {
+        this.postToDelete = postId;
+        this.showModal('delete-modal');
+      },
+      
+      // 处理登录
+      handleLogin() {
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value;
+        
+        if (!username || !password) {
+          return Utils.showToast('请输入用户名和密码', true);
+        }
+        
+        const user = DataStore.getUserByUsername(username);
+        if (!user) {
+          return Utils.showToast('用户名不存在', true);
+        }
+        
+        if (user.password !== password) {
+          return Utils.showToast('密码不正确', true);
+        }
+        
+        DataStore.setCurrentUser(user);
+        this.hideModal('login-modal');
+        Utils.showToast('登录成功');
+        this.checkAuthStatus();
+      },
+      
+      // 处理注册
+      handleRegister() {
+        const username = document.getElementById('register-username').value.trim();
+        const email = document.getElementById('register-email').value.trim();
+        const password = document.getElementById('register-password').value;
+        const confirmPassword = document.getElementById('register-confirm').value;
+        
+        // 验证表单
+        if (!username || !email || !password || !confirmPassword) {
+          return Utils.showToast('请填写所有字段', true);
+        }
+        
+        if (!Utils.validateEmail(email)) {
+          return Utils.showToast('请输入有效的邮箱地址', true);
+        }
+        
+        if (password.length < 6) {
+          return Utils.showToast('密码长度至少为6位', true);
+        }
+        
+        if (password !== confirmPassword) {
+          return Utils.showToast('两次输入的密码不一致', true);
+        }
+        
+        if (DataStore.getUserByUsername(username)) {
+          return Utils.showToast('用户名已存在', true);
+        }
+        
+        // 创建新用户
+        const newUser = {
+          id: Utils.generateId(),
+          username,
+          email,
+          password,
+          bio: '',
+          createdAt: new Date().toISOString()
+        };
+        
+        DataStore.addUser(newUser);
+        DataStore.setCurrentUser(newUser);
+        
+        this.hideModal('register-modal');
+        Utils.showToast('注册成功，欢迎加入JoltTalk！');
+        this.checkAuthStatus();
+      },
+      
+      // 处理登出
+      handleLogout() {
+        DataStore.clearCurrentUser();
+        Utils.showToast('已退出登录');
+        this.checkAuthStatus();
+      },
+      
+      // 处理更新个人资料
+      handleUpdateProfile() {
+        const currentUser = DataStore.getCurrentUser();
+        if (!currentUser) return;
+        
+        const bio = document.getElementById('edit-bio').value.trim();
+        const email = document.getElementById('edit-email').value.trim();
+        
+        if (!Utils.validateEmail(email)) {
+          return Utils.showToast('请输入有效的邮箱地址', true);
+        }
+        
+        // 更新用户信息
+        const updatedUser = {
+          ...currentUser,
+          bio,
+          email
+        };
+        
+        DataStore.updateUser(updatedUser);
+        this.hideModal('edit-profile-modal');
+        Utils.showToast('资料更新成功');
+        this.loadProfilePage(); // 刷新个人资料页面
+      },
+      
+      // 处理创建帖子
+      handleCreatePost() {
+        const content = document.getElementById('post-content').value.trim();
+        const category = document.getElementById('post-category').value;
+        const currentUser = DataStore.getCurrentUser();
+        
+        if (!content) {
+          return Utils.showToast('帖子内容不能为空', true);
+        }
+        
+        const newPost = {
+          id: Utils.generateId(),
+          userId: currentUser.id,
+          category,
+          content,
+          createdAt: new Date().toISOString()
+        };
+        
+        DataStore.addPost(newPost);
+        document.getElementById('post-form').reset();
+        Utils.showToast('帖子发布成功！');
+        this.loadPosts();
+      },
+      
+      // 处理添加评论
+      handleAddComment(postId) {
+        const commentInput = document.getElementById(`comment-input-${postId}`);
+        const content = commentInput.value.trim();
+        const currentUser = DataStore.getCurrentUser();
+        
+        if (!content) {
+          return Utils.showToast('评论内容不能为空', true);
+        }
+        
+        const newComment = {
+          id: Utils.generateId(),
+          postId,
+          userId: currentUser.id,
+          content,
+          createdAt: new Date().toISOString()
+        };
+        
+        DataStore.addComment(newComment);
+        commentInput.value = '';
+        Utils.showToast('评论成功！');
+        this.loadComments(postId);
+      },
+      
+      // 处理点赞
+      handleLike(postId, element) {
+        const currentUser = DataStore.getCurrentUser();
+        if (!currentUser) return;
+        
+        const isLiked = DataStore.toggleLike(currentUser.id, postId);
+        const likeIcon = element.querySelector('i');
+        const likeCount = element.querySelector('span');
+        
+        if (isLiked) {
+          likeIcon.classList.remove('fa-heart-o');
+          likeIcon.classList.add('fa-heart', 'text-red-500');
+        } else {
+          likeIcon.classList.remove('fa-heart', 'text-red-500');
+          likeIcon.classList.add('fa-heart-o');
+        }
+        
+        likeCount.textContent = DataStore.getLikeCountByPostId(postId);
+      },
+      
+      // 处理搜索
+      handleSearch(query) {
+        const results = Utils.searchPosts(query);
+        const postsContainer = document.getElementById('posts-container');
+        const emptyPosts = document.getElementById('empty-posts');
+        
+        // 切换到论坛页面
+        this.navigateTo('forum');
+        
+        // 显示搜索结果
+        postsContainer.innerHTML = '';
+        
+        if (results.length === 0) {
+          emptyPosts.classList.remove('hidden');
+          emptyPosts.innerHTML = `
+            <i class="fa fa-search text-4xl mb-3 opacity-50"></i>
+            <p>没有找到与"${query}"相关的内容</p>
+          `;
+          return;
+        }
+        
+        emptyPosts.classList.add('hidden');
+        
+        results.forEach(post => {
+          this.renderPost(post, postsContainer);
+        });
+        
+        // 为新添加的元素绑定事件
+        this.bindPostEvents();
+      },
+      
+      // 加载首页
+      loadHomePage() {
+        const currentUser = DataStore.getCurrentUser();
+        if (!currentUser) return;
+        
+        // 更新个人信息
+        document.getElementById('welcome-username').textContent = currentUser.username;
+        document.getElementById('home-username').textContent = currentUser.username;
+        document.getElementById('home-avatar').src = `https://picsum.photos/seed/${currentUser.id}/100/100`;
+        document.getElementById('home-joined').textContent = `加入于 ${new Date(currentUser.createdAt).getFullYear()} 年`;
+        
+        // 统计数据
+        const userPosts = DataStore.getPostsByUserId(currentUser.id);
+        const commentCount = DataStore.getCommentCountByUserId(currentUser.id);
+        const likeCount = DataStore.getLikeCountByUserId(currentUser.id);
+        
+        document.getElementById('home-posts-count').textContent = userPosts.length;
+        document.getElementById('home-comments-count').textContent = commentCount;
+        document.getElementById('home-likes-count').textContent = likeCount;
+        
+        // 加载推荐帖子
+        const recommendedPosts = DataStore.getPopularPosts();
+        const recommendedContainer = document.getElementById('recommended-posts');
+        
+        recommendedContainer.innerHTML = '';
+        
+        if (recommendedPosts.length === 0) {
+          recommendedContainer.innerHTML = `
+            <div class="text-center py-6 text-gray-500">
+              <p>暂时没有推荐的帖子</p>
+            </div>
+          `;
+        } else {
+          recommendedPosts.forEach(post => {
+            const user = DataStore.getUserById(post.userId);
+            if (!user) return;
+            
+            const postElement = document.createElement('div');
+            postElement.className = 'p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors';
+            postElement.innerHTML = `
+              <div class="flex items-center space-x-2 mb-2">
+                <img src="https://picsum.photos/seed/${user.id}/32/32" alt="${user.username}" class="w-6 h-6 rounded-full">
+                <span class="text-sm font-medium">${user.username}</span>
+                <span class="text-xs text-gray-500">${Utils.formatDate(post.createdAt)}</span>
+              </div>
+              <p class="text-sm text-gray-700 mb-2 line-clamp-2">${post.content}</p>
+              <div class="flex items-center space-x-4 text-xs text-gray-500">
+                <span><i class="fa fa-comment-o mr-1"></i>${DataStore.getCommentsByPostId(post.id).length}</span>
+                <span><i class="fa fa-heart-o mr-1"></i>${DataStore.getLikeCountByPostId(post.id)}</span>
+              </div>
+            `;
+            
+            // 点击帖子跳转到论坛并滚动到该帖子
+            postElement.addEventListener('click', () => {
+              this.navigateTo('forum');
+              setTimeout(() => {
+                const posts = document.querySelectorAll('#posts-container > div');
+                posts.forEach(p => {
+                  if (p.querySelector(`[data-post-id="${post.id}"]`)) {
+                    p.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    p.classList.add('ring-2', 'ring-primary/30');
+                    setTimeout(() => {
+                      p.classList.remove('ring-2', 'ring-primary/30');
+                    }, 2000);
+                  }
+                });
+              }, 300);
+            });
+            
+            recommendedContainer.appendChild(postElement);
+          });
+        }
+        
+        // 更新分类统计
+        const categoryCounts = DataStore.getPostCountByCategory();
+        for (const [category, count] of Object.entries(categoryCounts)) {
+          document.getElementById(`${category}-count`).textContent = count;
+        }
+      },
+      
+      // 加载帖子列表
+      loadPosts() {
+        const posts = DataStore.getPosts(this.currentCategory);
+        const postsContainer = document.getElementById('posts-container');
+        const emptyPosts = document.getElementById('empty-posts');
+        
+        postsContainer.innerHTML = '';
+        
+        if (posts.length === 0) {
+          emptyPosts.classList.remove('hidden');
+          return;
+        }
+        
+        emptyPosts.classList.add('hidden');
+        
+        posts.forEach(post => {
+          this.renderPost(post, postsContainer);
+        });
+        
+        // 绑定事件
+        this.bindPostEvents();
+      },
+      
+      // 渲染单个帖子
+      renderPost(post, container) {
+        const user = DataStore.getUserById(post.userId);
+        const currentUser = DataStore.getCurrentUser();
+        if (!user) return;
+        
+        const isAuthor = currentUser && currentUser.id === user.id;
+        const isLiked = currentUser && DataStore.hasUserLikedPost(currentUser.id, post.id);
+        const likeCount = DataStore.getLikeCountByPostId(post.id);
+        const commentCount = DataStore.getCommentsByPostId(post.id).length;
+        
+        const postElement = document.createElement('div');
+        postElement.className = 'bg-white rounded-xl p-6 card-shadow hover-lift';
+        postElement.innerHTML = `
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center space-x-3">
+              <img src="https://picsum.photos/seed/${user.id}/48/48" alt="${user.username}" class="w-10 h-10 rounded-full object-cover">
+              <div>
+                <h4 class="font-semibold">${user.username}</h4>
+                <div class="flex items-center text-sm text-gray-500">
+                  <span>${Utils.formatDate(post.createdAt)}</span>
+                  <span class="mx-2">•</span>
+                  <span class="px-2 py-0.5 bg-${this.getCategoryColor(post.category)}-100 text-${this.getCategoryColor(post.category)}-800 rounded-full text-xs">
+                    ${this.getCategoryName(post.category)}
+                  </span>
+                </div>
+              </div>
+            </div>
+            ${isAuthor ? `
+              <button class="text-gray-400 hover:text-red-500 transition-colors delete-post-btn" data-post-id="${post.id}">
+                <i class="fa fa-trash-o"></i>
+              </button>
+            ` : ''}
+          </div>
+          <div class="mb-4">
+            <p class="text-gray-800">${post.content}</p>
+          </div>
+          <div class="flex items-center space-x-6 text-gray-500 border-t pt-4">
+            <button class="flex items-center space-x-1 hover:text-primary transition-colors comment-toggle" data-post-id="${post.id}">
+              <i class="fa fa-comment-o"></i>
+              <span id="comment-count-${post.id}">${commentCount}</span>
+            </button>
+            <button class="flex items-center space-x-1 hover:text-red-500 transition-colors like-btn" data-post-id="${post.id}">
+              <i class="${isLiked ? 'fa fa-heart text-red-500' : 'fa fa-heart-o'}"></i>
+              <span>${likeCount}</span>
+            </button>
+            <button class="flex items-center space-x-1 hover:text-primary transition-colors">
+              <i class="fa fa-share"></i>
+              <span>分享</span>
+            </button>
+          </div>
+          <div class="mt-4 comment-section hidden" id="comment-section-${post.id}">
+            <div class="mb-4" id="comments-container-${post.id}">
+              <!-- 评论将动态加载 -->
+            </div>
+            <div class="flex space-x-2">
+              <img src="https://picsum.photos/seed/${currentUser.id}/32/32" alt="Your avatar" class="w-8 h-8 rounded-full object-cover">
+              <div class="flex-grow relative">
+                <input 
+                  type="text" 
+                  id="comment-input-${post.id}" 
+                  class="w-full pl-4 pr-12 py-2 border border-gray-200 rounded-full focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all" 
+                  placeholder="添加评论...">
+                <button 
+                  class="absolute right-1 top-1 px-3 py-1 bg-primary text-white rounded-full text-sm hover:bg-primary/90 transition-colors add-comment" 
+                  data-post-id="${post.id}">
+                  发送
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        container.appendChild(postElement);
+        
+        // 加载该帖子的评论
+        this.loadComments(post.id);
+      },
+      
+      // 绑定帖子相关事件
+      bindPostEvents() {
+        // 评论切换事件
+        document.querySelectorAll('.comment-toggle').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const postId = btn.getAttribute('data-post-id');
+            document.getElementById(`comment-section-${postId}`).classList.toggle('hidden');
+          });
+        });
+        
+        // 添加评论事件
+        document.querySelectorAll('.add-comment').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const postId = btn.getAttribute('data-post-id');
+            this.handleAddComment(postId);
+          });
+        });
+        
+        // 评论框回车提交
+        document.querySelectorAll('[id^="comment-input-"]').forEach(input => {
+          input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+              const postId = input.id.split('-')[2];
+              this.handleAddComment(postId);
+            }
+          });
+        });
+        
+        // 点赞事件
+        document.querySelectorAll('.like-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const postId = btn.getAttribute('data-post-id');
+            this.handleLike(postId, btn);
+          });
+        });
+        
+        // 删除帖子事件
+        document.querySelectorAll('.delete-post-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const postId = btn.getAttribute('data-post-id');
+            this.showDeleteModal(postId);
+          });
+        });
+      },
+      
+      // 加载特定帖子的评论
+      loadComments(postId) {
+        const comments = DataStore.getCommentsByPostId(postId);
+        const commentsContainer = document.getElementById(`comments-container-${postId}`);
+        const commentCount = document.getElementById(`comment-count-${postId}`);
+        
+        if (commentCount) {
+          commentCount.textContent = comments.length;
+        }
+        
+        if (!commentsContainer) return;
+        
+        commentsContainer.innerHTML = '';
+        
+        comments.forEach(comment => {
+          const user = DataStore.getUserById(comment.userId);
+          if (!user) return;
+          
+          const commentElement = document.createElement('div');
+          commentElement.className = 'flex space-x-3 mb-3';
+          commentElement.innerHTML = `
+            <img src="https://picsum.photos/seed/${user.id}/36/36" alt="${user.username}" class="w-8 h-8 rounded-full object-cover">
+            <div class="bg-gray-50 rounded-lg p-3 flex-grow">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-medium text-sm">${user.username}</span>
+                <span class="text-xs text-gray-500">${Utils.formatDate(comment.createdAt)}</span>
+              </div>
+              <p class="text-sm text-gray-800">${comment.content}</p>
+            </div>
+          `;
+          
+          commentsContainer.appendChild(commentElement);
+        });
+      },
+      
+      // 加载个人资料页面
+      loadProfilePage() {
+        const currentUser = DataStore.getCurrentUser();
+        if (!currentUser) return;
+        
+        // 更新个人资料信息
+        document.getElementById('profile-username').textContent = currentUser.username;
+        document.getElementById('profile-avatar').src = `https://picsum.photos/seed/${currentUser.id}/100/100`;
+        document.getElementById('profile-joined').textContent = `加入于 ${new Date(currentUser.createdAt).getFullYear()} 年`;
+        document.getElementById('profile-bio').textContent = currentUser.bio || '这个用户很懒，什么都没有留下';
+        document.getElementById('profile-email').textContent = currentUser.email;
+        
+        // 统计数据
+        const userPosts = DataStore.getPostsByUserId(currentUser.id);
+        const commentCount = DataStore.getCommentCountByUserId(currentUser.id);
+        const likeCount = DataStore.getLikeCountByUserId(currentUser.id);
+        
+        document.getElementById('profile-posts-count').textContent = userPosts.length;
+        document.getElementById('profile-comments-count').textContent = commentCount;
+        document.getElementById('profile-likes-count').textContent = likeCount;
+        
+        // 加载用户发布的帖子
+        const profilePostsContainer = document.getElementById('profile-posts-container');
+        profilePostsContainer.innerHTML = '';
+        
+        if (userPosts.length === 0) {
+          profilePostsContainer.innerHTML = `
+            <div class="text-center py-12 text-gray-500">
+              <i class="fa fa-file-text-o text-4xl mb-3 opacity-50"></i>
+              <p>还没有发布任何帖子</p>
+              <button id="profile-new-post-btn" class="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+                <i class="fa fa-pencil mr-1"></i> 发布第一条帖子
+              </button>
+            </div>
+          `;
+          
+          // 绑定发布帖子按钮事件
+          document.getElementById('profile-new-post-btn').addEventListener('click', () => {
+            this.navigateTo('forum');
+            document.getElementById('post-content').focus();
+          });
+        } else {
+          userPosts.forEach(post => {
+            this.renderPost(post, profilePostsContainer);
+          });
+          
+          // 绑定事件
+          this.bindPostEvents();
+        }
+      },
+      
+      // 加载我的帖子页面
+      loadMyPostsPage() {
+        const currentUser = DataStore.getCurrentUser();
+        if (!currentUser) return;
+        
+        const userPosts = DataStore.getPostsByUserId(currentUser.id);
+        const userPostsContainer = document.getElementById('user-posts-container');
+        const emptyMyPosts = document.getElementById('empty-my-posts');
+        
+        userPostsContainer.innerHTML = '';
+        
+        if (userPosts.length === 0) {
+          emptyMyPosts.classList.remove('hidden');
+        } else {
+          emptyMyPosts.classList.add('hidden');
+          
+          userPosts.forEach(post => {
+            this.renderPost(post, userPostsContainer);
+          });
+          
+          // 绑定事件
+          this.bindPostEvents();
+        }
+      },
+      
+      // 获取分类名称
+      getCategoryName(category) {
+        const categories = {
+          'tech': '科技',
+          'life': '生活',
+          'work': '工作',
+          'study': '学习',
+          'entertainment': '娱乐'
+        };
+        return categories[category] || category;
+      },
+      
+      // 获取分类对应的颜色
+      getCategoryColor(category) {
+        const colors = {
+          'tech': 'blue',
+          'life': 'green',
+          'work': 'yellow',
+          'study': 'purple',
+          'entertainment': 'red'
+        };
+        return colors[category] || 'gray';
+      }
+    };
+
+    // 页面加载完成后初始化应用
+    document.addEventListener('DOMContentLoaded', () => {
+      App.init();
+      
+      // 导航栏滚动效果
+      window.addEventListener('scroll', () => {
+        const navbar = document.getElementById('navbar');
+        if (window.scrollY > 10) {
+          navbar.classList.add('py-2', 'shadow');
+          navbar.classList.remove('py-3', 'shadow-sm');
+        } else {
+          navbar.classList.add('py-3', 'shadow-sm');
+          navbar.classList.remove('py-2', 'shadow');
+        }
+      });
+    });
+  </script>
 </body>
 </html>
